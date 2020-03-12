@@ -30,4 +30,6 @@ int main()
 	return 1;
 }
 ```
-
+This was my simple code to find PI in C.
+Here i have used an Leibenz series to find PI.
+Formulae of Leibenz :- ![alt text](https://bit.ly/2Q6T992)
