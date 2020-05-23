@@ -1,7 +1,8 @@
 #include<stdio.h>
 #include<malloc.h>
+#include<cstring>
 
-#define SIZE 100000
+#define SIZE 100
 
 class BigDecimal{
 	long arr[SIZE];
@@ -18,56 +19,49 @@ public:
 		}
 		return arr;
 	}*/
-	
-	BigDecimal()       : arr({})  {}
-	BigDecimal(int n)  : arr({n}) {}
-	BigDecimal(long n) : arr({n}) {}
-	
-	BigDecimal operator + (BigDecimal othr)
+	BigDecimal(){};
+	BigDecimal(int n){memset(arr,0,SIZE*sizeof(long));arr[0]=n;} 
+	BigDecimal(long n){memset(arr,0,SIZE*sizeof(long));arr[0]=n;}
+
+	BigDecimal operator + (BigDecimal othr){return add(*this,othr);}
+	BigDecimal operator - (BigDecimal othr){return sub(*this,othr);}
+	BigDecimal operator / (long n){return divide(*this,n);}
+	BigDecimal operator * (long n){return mul(*this,n);}
+
+	BigDecimal add(BigDecimal a_,BigDecimal b_)
 	{
-		BigDecimal ans;
-		ans.add(*this, othr);
-		return ans;
-	}
-	
-	BigDecimal operator - (BigDecimal othr)
-	{
-		BigDecimal ans;
-		ans.sub(*this, othr);
-		return ans;
-	}
-	
-	BigDecimal operator / (long n)
-	{
-		BigDecimal ans;
-		ans.divide(*this, n);
-		return ans;
-	}
-	
-	BigDecimal& add(BigDecimal a_,BigDecimal b_)
-	{
+		BigDecimal ans(0);
 		long len = SIZE;
 		long* a = a_.arr;
 		long* b = b_.arr;
 		long c=0;
 		long i;
-		for(i=len-1;i>=0;i--)
+		for(i=len-1;i>0;i--)
 		{
-			if(a[i]+b[i]+c<=9 || i == 0)
-			{
-				arr[i]=a[i]+b[i]+c;
-				c=0;
-			}
-			else
-			{
-				arr[i] = (a[i]+b[i]+c)%10;
-				c=(a[i]+b[i]+c)/10;
-			}
+			ans.arr[i] += (a[i] + b[i])%10;
+			ans.arr[i-1] += (a[i] + b[i])/10;
 		}
-		return *this;
+		ans.arr[0] += (a[0] + b[0]);
+		return ans;
 	}
-	BigDecimal& sub(BigDecimal a_,BigDecimal b_)
+	BigDecimal mul(BigDecimal a_,long n)
 	{
+		BigDecimal ans(0);
+		long len = SIZE;
+		long* a = a_.arr;
+		long c=0;
+		long i;
+		for(i=len-1;i>0;i--)
+		{
+			ans.arr[i] += (a[i] * n)%10;
+			ans.arr[i-1] += (a[i] * n)/10;
+		}
+		ans.arr[0] += (a[0] * n);
+		return ans;
+	}
+	BigDecimal sub(BigDecimal a_,BigDecimal b_)
+	{
+		BigDecimal ans(0);
 		long len = SIZE;
 		long* a = a_.arr;
 		long* b = b_.arr;
@@ -76,25 +70,29 @@ public:
 
 		for(i=len-1;i>=0;i--)
 		{
-			if(a[i]>=b[i]){ arr[i] = a[i] - b[i]; }
-			if(a[i]<b[i]) { arr[i] = 10 + a[i] - b[i]; a[i-1] = a[i-1] -1;}
+			if(a[i]>=b[i]){ ans.arr[i] = a[i] - b[i]; }
+			if(a[i]<b[i]) { ans.arr[i] = 10 + a[i] - b[i]; a[i-1] = a[i-1] -1;}
 		}
-		return *this;
+		return ans;
 	}
-	BigDecimal& divide(BigDecimal a_, long b)
+	BigDecimal divide(BigDecimal a_, long b)
 	{
+		BigDecimal ans(0);
 		long len = SIZE;
 		long* a = a_.arr;
-
-		long count=0,c=0,temp=a[0];
+		long count=0,c=a[0];
 		long i;
-		for(i=0;i<10*len;i++)
-		{
-			if(c==len){break;}
-			if(temp>=b){ temp=temp-b; count++;}
-			if(temp <b){ temp=10*temp+a[c+1];arr[c]=count;count=0;c++;}
+		long x = a[0]/b;
+		ans.arr[0] = x;
+		for(i=0;i<len;i++)
+		{	
+			c -= (b*x);
+			if(c == 0){break;}
+			c *= 10;
+			x = c/b;
+			ans.arr[i+1] = x;
 		}
-		return *this;
+		return ans;
 	}
 	
 	/*long * sub1(long a,long b){  long * arr = (long *)malloc(sizeof(long)*100);arr[0] = a-b; return arr;}
